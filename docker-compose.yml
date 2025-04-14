@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "5001:5000" # Exposed ONLY for debugging (not used by frontend)
+    env_file:
+      - .env
+    depends_on:
+      - db
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  frontend:
+    build: ./frontend/accounting-vue-app
+    ports:
+      - "8080:5173" # Exposed to host for browser access
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend/accounting-vue-app:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://backend:5000/api
+
+  db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
